@@ -1,3 +1,5 @@
+#After I downloaded the data sets to my computer I imported them into R
+
 savant_data_2008_pitchers <- read_csv("CapStone Project/savant_data_2008_pitchers.csv")
 
 savant_data_2009_pitchers <- read_csv("CapStone Project/savant_data_2009_pitchers.csv")
@@ -45,6 +47,8 @@ FanGraphs_Leaderboard_2017 <- read_csv("CapStone Project/FanGraphs Leaderboard 2
 
 FanGraphs_Leaderboard_2018 <- read_csv("CapStone Project/FanGraphs Leaderboard 2018.csv")
 
+#After importing I began to merge each data set with the corresponding year together to create one year data frames between the Baseball Savant and Fangraphs imported data sets
+
 baseball_2008 <- merge(savant_data_2008_pitchers, FanGraphs_Leaderboard_2008, by.x = 'player_name', by.y = 'Name')
 > View(baseball_2008)
 
@@ -78,13 +82,18 @@ baseball_2017 <- merge(savant_data_2017_pitchers, FanGraphs_Leaderboard_2017, by
 baseball_2018 <- merge(savant_data_2018_pitchers, FanGraphs_Leaderboard_2018, by.x = 'player_name', by.y = 'Name')
 > View(baseball_2018)
 
+#I then merged the years based off the MLB data collection programs. 2008-2014 were collected by PitchFx; 2015-2018 by Statcast
+
 Pitchers_Baseball_Savant <- rbind(baseball_2018, baseball_2017, baseball_2016, baseball_2015)
 
 Pitchers_PitchFX <- rbind(baseball_2008, baseball_2009, baseball_2010, baseball_2011, baseball_2012, baseball_2013, baseball_2014)
 
+#I changed the names on the columns in each data frame above to better suit R coding to call on each respective column
+
 colnames(Pitchers_Baseball_Savant)[colnames(Pitchers_Baseball_Savant)=="K/9"] <- "Strikeout_rate"
  
 colnames(Pitchers_Baseball_Savant)[colnames(Pitchers_Baseball_Savant)=="BB/9"] <- "Walk_rate" 
+
 colnames(Pitchers_Baseball_Savant)[colnames(Pitchers_Baseball_Savant)=="LOB%"] <- "Left_On_Base"
  
 colnames(Pitchers_Baseball_Savant)[colnames(Pitchers_Baseball_Savant)=="HR/9"] <- "Homerun_Rate"
@@ -104,10 +113,14 @@ colnames(Pitchers_PitchFX)[colnames(Pitchers_PitchFX)=="HR/9"] <- "Homerun_Rate"
 colnames(Pitchers_PitchFX)[colnames(Pitchers_PitchFX)=="GB%"] <- "Groundball_Rate"
  
 colnames(Pitchers_PitchFX)[colnames(Pitchers_PitchFX)=="HR/FB"] <- "Homerun_To_Flyball"
+
+#I then removed insignificant and duplicate rows from each data frame
  
 Pitchers_Baseball_Savant_new <- subset(Pitchers_Baseball_Savant, select = -c(player_name, Team, babip, playerid))
  
 Pitchers_PitchFX_new <- subset(Pitchers_PitchFX, select = -c(player_name, Team, babip, playerid))
+
+#The following is done to change columns to "Numeric" factors in order to run correlations and regressions. Previously they were "Character"
 
 Pitchers_PitchFX_new$ba <- as.numeric(Pitchers_PitchFX_new$ba)
 
@@ -151,16 +164,6 @@ Pitchers_PitchFX_new$pos8_int_start_distance <- as.numeric(Pitchers_PitchFX_new$
 
 Pitchers_PitchFX_new$pos9_int_start_distance <- as.numeric(Pitchers_PitchFX_new$pos9_int_start_distance)
 
-Pitchers_PitchFX_new$Left_On_Base <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Left_On_Base))
-
-Pitchers_PitchFX_new$Groundball_Rate <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Groundball_Rate))
-
-Pitchers_PitchFX_new$Homerun_To_Flyball <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Homerun_To_Flyball))
-
-Pitchers_PitchFX_new_1 <- subset(Pitchers_PitchFX_new, pitch_percent > 80.0)
-
-Pitchers_Baseball_Savant_new_1 <- subset(Pitchers_Baseball_Savant_new, pitch_percent > 80.0)
-
 Pitchers_Baseball_Savant_new_1$ba <- as.numeric(Pitchers_Baseball_Savant_new_1$ba)
 
 Pitchers_Baseball_Savant_new_1$iso <- as.numeric(Pitchers_Baseball_Savant_new_1$iso)
@@ -203,11 +206,27 @@ Pitchers_Baseball_Savant_new_1$pos8_int_start_distance <- as.numeric(Pitchers_Ba
 
 Pitchers_Baseball_Savant_new_1$pos9_int_start_distance <- as.numeric(Pitchers_Baseball_Savant_new_1$pos9_int_start_distance)
 
+#I realized that if I used the above code to change to numeric I would lose the entire data column because of the "%". So I removed the "% in the following columns to keep the numeric data
+
+Pitchers_PitchFX_new$Left_On_Base <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Left_On_Base))
+
+Pitchers_PitchFX_new$Groundball_Rate <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Groundball_Rate))
+
+Pitchers_PitchFX_new$Homerun_To_Flyball <- as.numeric(sub("%", "",Pitchers_PitchFX_new$Homerun_To_Flyball))
+
 Pitchers_Baseball_Savant_new_1$Left_On_Base <- as.numeric(sub("%", "", Pitchers_Baseball_Savant_new_1$Left_On_Base))
 
 Pitchers_Baseball_Savant_new_1$Groundball_Rate <- as.numeric(sub("%", "", Pitchers_Baseball_Savant_new_1$Groundball_Rate))
 
 Pitchers_Baseball_Savant_new_1$Homerun_To_Flyball <- as.numeric(sub("%", "", Pitchers_Baseball_Savant_new_1$Homerun_To_Flyball))
+
+#After reviewing the data frames I began to see that there were outliers within the data set that could skew the results so I decided to remove all pitchers that did not throw at least 80 innings
+
+Pitchers_PitchFX_new_1 <- subset(Pitchers_PitchFX_new, pitch_percent > 80.0)
+
+Pitchers_Baseball_Savant_new_1 <- subset(Pitchers_Baseball_Savant_new, pitch_percent > 80.0)
+
+#Removing the NA observations and rows from data frames was key to allowing me to run correlations and regressions
 
 Pitchers_Baseball_Savant_new_2 <- na.omit(Pitchers_Baseball_Savant_new_1)
 
