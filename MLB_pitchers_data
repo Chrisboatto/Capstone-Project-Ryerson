@@ -233,3 +233,106 @@ Pitchers_Baseball_Savant_new_2 <- na.omit(Pitchers_Baseball_Savant_new_1)
 Pitchers_PitchFX_new_2 <- subset(Pitchers_PitchFX_new_1, select = -c(xwoba, xba, launch_speed, launch_angle, spin_rate, effective_speed, eff_min_vel, release_extension, pos3_int_start_distance, pos4_int_start_distance, pos5_int_start_distance, pos6_int_start_distance, pos7_int_start_distance, pos8_int_start_distance, pos9_int_start_distance))
 
 Pitchers_PitchFX_new_3 <- na.omit(Pitchers_PitchFX_new_2)
+
+# The following makes new columns within the data set to view the variations from the mean each statistic has
+
+Pitchers_Baseball_Savant_new_2$Velo_Mean_Diff <- Pitchers_Baseball_Savant_new_2$velocity - mean(Pitchers_Baseball_Savant_new_2$velocity)
+
+Pitchers_Baseball_Savant_new_2$Spin_Rate_Mean_Diff <- Pitchers_Baseball_Savant_new_2$spin_rate - mean(Pitchers_Baseball_Savant_new_2$spin_rate)
+
+Pitchers_Baseball_Savant_new_2$effective_speed_diff <- Pitchers_Baseball_Savant_new_2$effective_speed - mean(Pitchers_Baseball_Savant_new_2$effective_speed)
+
+Pitchers_PitchFX_new_3$Velo_Mean_Diff <- Pitchers_PitchFX_new_3$velocity - mean(Pitchers_PitchFX_new_3$velocity)
+
+# The following code creates a new column to depict groupings in each respective statistic that groups based off of above, average or below average based off the mean
+
+Pitchers_Baseball_Savant_new_2$velocity_groupings[Pitchers_Baseball_Savant_new_2$velocity >= 90.91] <- "High"
+
+Pitchers_Baseball_Savant_new_2$velocity_groupings[Pitchers_Baseball_Savant_new_2$velocity < 90.91 & Pitchers_Baseball_Savant_new_2$velocity > 86.79] <- "Average"
+
+Pitchers_Baseball_Savant_new_2$velocity_groupings[Pitchers_Baseball_Savant_new_2$velocity < 86.80] <- "Below"
+
+Pitchers_Baseball_Savant_new_2$spin_rate_groupings[Pitchers_Baseball_Savant_new_2$spin_rate > 2308] <- "High"
+
+Pitchers_Baseball_Savant_new_2$spin_rate_groupings[Pitchers_Baseball_Savant_new_2$spin_rate < 2309 & Pitchers_Baseball_Savant_new_2$spin_rate > 2066] <- "Average"
+
+Pitchers_Baseball_Savant_new_2$spin_rate_groupings[Pitchers_Baseball_Savant_new_2$spin_rate < 2067] <- "Below"
+
+Pitchers_Baseball_Savant_new_2$effective_speed_groupings[Pitchers_Baseball_Savant_new_2$effective_speed > 90.47] <- "High"
+
+Pitchers_Baseball_Savant_new_2$effective_speed_groupings[Pitchers_Baseball_Savant_new_2$effective_speed < 90.48 & Pitchers_Baseball_Savant_new_2$effective_speed > 86.11] <- "Average"
+
+Pitchers_Baseball_Savant_new_2$effective_speed_groupings[Pitchers_Baseball_Savant_new_2$effective_speed < 86.12] <- "Below"
+
+Pitchers_Baseball_Savant_new_2$Strikeout_rate_groupings[Pitchers_Baseball_Savant_new_2$Strikeout_rate > 9.510] <- "High"
+
+Pitchers_Baseball_Savant_new_2$Strikeout_rate_groupings[Pitchers_Baseball_Savant_new_2$Strikeout_rate < 9.510 & Pitchers_Baseball_Savant_new_2$Strikeout_rate > 6.429] <- "Average"
+
+Pitchers_Baseball_Savant_new_2$Strikeout_rate_groupings[Pitchers_Baseball_Savant_new_2$Strikeout_rate < 6.430] <- "Below"
+
+Pitchers_PitchFX_new_3$Strikeout_rate_groupings[Pitchers_PitchFX_new_3$Strikeout_rate > 8.79] <- "High"
+
+Pitchers_PitchFX_new_3$Strikeout_rate_groupings[Pitchers_PitchFX_new_3$Strikeout_rate < 8.80 & Pitchers_PitchFX_new_3$Strikeout_rate > 5.78] <- "Average"
+
+Pitchers_PitchFX_new_3$Strikeout_rate_groupings[Pitchers_PitchFX_new_3$Strikeout_rate < 5.79] <- "Below"
+
+#Then changed the created columns to factors from character strings
+
+Pitchers_Baseball_Savant_new_2$velocity_groupings <- as.factor(Pitchers_Baseball_Savant_new_2$velocity_groupings)
+
+Pitchers_Baseball_Savant_new_2$spin_rate_groupings <- as.factor(Pitchers_Baseball_Savant_new_2$spin_rate_groupings)
+
+Pitchers_Baseball_Savant_new_2$effective_speed_groupings <- as.factor(Pitchers_Baseball_Savant_new_2$effective_speed_groupings)
+
+#Then subset the data based off the follwoing conditions to remove the extreme outliers
+
+Pitchers_Baseball_Savant_new_3 <- subset(Pitchers_Baseball_Savant_new_2, Strikeout_rate < 26.99)
+
+Pitchers_Baseball_Savant_new_3 <- subset(Pitchers_Baseball_Savant_new_2, Strikeout_rate > 0.01)
+
+Pitchers_PitchFX_new_3 <- subset(Pitchers_PitchFX_new_3, Pitchers_PitchFX_new_3$Strikeout_rate > 0.01 & Pitchers_PitchFX_new_3$Strikeout_rate < 26.99)
+
+#Created the Training and Test data set
+
+set.seed(1000)
+
+Baseball_Savant_train <- round(nrow(Pitchers_Baseball_Savant_new_3) *0.80)
+
+Baseball_Savant_train
+[1] 1884
+
+train <- sample(1:nrow(Pitchers_Baseball_Savant_new_3), Baseball_Savant_train, replace = FALSE)
+
+trainBS <- Pitchers_Baseball_Savant_new_3[train,]
+
+testBS <- Pitchers_Baseball_Savant_new_3[-train,]
+
+#Created decision trees on both the Training and Test data sets
+
+Strikeout_classification_train <- rpart(Strikeout_rate_groupings ~ velocity + spin_rate + effective_speed, data = trainBS, method = "class")
+
+rpart.plot(Strikeout_classification_train)
+
+Strikeout_classification_test <- rpart(Strikeout_rate_groupings ~ velocity + spin_rate + effective_speed, data = testBS, method = "class")
+
+rpart.plot(Strikeout_classification_train_test)
+
+#Created a model to test the training data sets
+
+model <- train(Strikeout_rate ~ velocity + spin_rate + effective_speed, data = trainBS)
+
+#Predicted the test data set based off the model (training)
+
+predict(model, testBS)
+
+#Ran function to predict the test data sets strikeout rates successfully
+
+Strikeouts_predicted <- predict(model, testBS)
+
+#Created boxplots from the specific data columns
+
+boxplot(Pitchers_PitchFX_new_3$velocity)
+
+boxplot(Pitchers_Baseball_Savant_new_3$velocity)
+
+boxplot(Pitchers_Baseball_savant_new_3$spin_rate)
