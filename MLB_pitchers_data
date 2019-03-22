@@ -1,3 +1,8 @@
+#My capstone project I decided to do was to conclude what natural ability between 
+velocity, spin rate and expected velocity affected a pitcher's ability to strikeout hitters.
+I downloaded year by year stats from StatCast and Fangraphs from 2008 to 2018.
+
+
 #After I downloaded the data sets to my computer I imported them into R
 
 savant_data_2008_pitchers <- read_csv("CapStone Project/savant_data_2008_pitchers.csv")
